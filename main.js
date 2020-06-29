@@ -27,7 +27,10 @@ const addToDB = async () => {
   prompt([
     {
       name: "id",
-      message: "ID Number:",
+      message: "ID Number (4-digit):",
+      validate: function (id) {
+        return /\d{4}/.test(id);
+      },
     },
     {
       name: "firstName",
@@ -48,13 +51,14 @@ const addToDB = async () => {
       message: "Enter Role ID:",
       type: "list",
       choices: [
-        { value: 11, name: "sales associate", short: "Sales associate - 11" },
+        { value: 11, name: "Sales associate", short: "Sales associate - 11" },
         { value: 29, name: "Accountant", short: "Accountant - 29" },
         {
           value: 42,
-          name: "software engineer",
-          short: "software engineer - 42",
+          name: "Software engineer",
+          short: "Software engineer - 42",
         },
+        { value: 33, name: "Lawyer", short: "Lawyer - 33" },
       ],
     },
     {
@@ -155,30 +159,72 @@ const byDept = () => {
 };
 const delQuery = (ans) => {
   console.log(ans);
-  conn.query("DELETE FROM employee WHERE id = ?", [`${parseInt(ans)}`], (err, result)=>{
-    if (err){ 
-      return err
+  conn.query(
+    "DELETE FROM employee WHERE id = ?",
+    [`${parseInt(ans)}`],
+    (err, result) => {
+      if (err) {
+        return err;
+      }
+      console.log(result);
+      console.log("Delete Successful");
+      return main();
     }
-    console.log(result);
-    console.log("Delete Successful");
-    return main();
-  })
-  
-}
+  );
+};
 const delEmp = () => {
-  
-    conn.query(sqlQ, (err, data) => {
-      if (err) throw err;
-      console.table(data);
-   
+  conn.query(sqlQ, (err, data) => {
+    if (err) throw err;
+    console.table(data);
+
     prompt([
       {
         name: "del",
         message: "What is the id number of the employee you wish to delete?",
+        validate: function (del) {
+          return /\d{1,4}/.test(del);
+        },
       },
-    ]).then((ans)=>{
+    ]).then((ans) => {
       delQuery(ans.del);
+    });
   });
+};
+
+const byMangr = () => {
+  let sqlQ = "SELECT id, first_name, last_name, title, department ";
+  sqlQ += "FROM (";
+  sqlQ +=
+    "SELECT e.id, e.first_name, e.last_name, r.title, r.salary, d.department ";
+  sqlQ += "FROM employee e LEFT JOIN role r ON r.id = e.role_id ";
+  sqlQ +=
+    "LEFT JOIN department d ON d.id = r.department_id ORDER BY e.last_name) AS Joined ";
+  sqlQ += "WHERE title REGEXP 'Manager$'";
+  conn.query(sqlQ, (err, data) => {
+    if (err) {
+      throw err;
+    }
+    console.table(data);
+    prompt([
+      {
+        name: "mang",
+        message: "Enter Desired Manager's ID:",
+        validate: function (mang) {
+          return /^\d{1,4}$/.test(mang);
+        },
+      },
+    ]).then((ans) => {
+      conn.query(
+        "SELECT * FROM employee WHERE manager_id = ?",
+        [`${parseInt(ans.mang)}`],
+        (err, data) => {
+          if (err) {
+            throw err;
+          }
+          console.table(data);
+        }
+      );
+    });
   });
 };
 
@@ -213,6 +259,7 @@ const main = async () => {
         await byDept();
         break;
       case "All employees by manager":
+        await byMangr();
         break;
       case "Update employee roles":
         break;

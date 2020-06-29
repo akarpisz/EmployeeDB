@@ -26,3 +26,9 @@ VALUES
 (8452, "Gorgan","Zola", 11, 1198), --sales--
 (8451, "Ed", "Gein", 42, 0023) --eng--
 ;
+
+INSERT INTO department(id, department) VALUES 
+(10, "Sales"),
+(20, "Finance"),
+(30, "Legal"),
+(45, "Engineering");
