@@ -200,6 +200,7 @@ const byMangr = () => {
   sqlQ +=
     "LEFT JOIN department d ON d.id = r.department_id ORDER BY e.last_name) AS Joined ";
   sqlQ += "WHERE title REGEXP 'Manager$'";
+
   conn.query(sqlQ, (err, data) => {
     if (err) {
       throw err;
@@ -228,6 +229,59 @@ const byMangr = () => {
   });
 };
 
+const updateRole = () => {
+    let empId;
+
+    conn.query(sqlQ, async (err, data) => {
+      if (err) {
+        throw err;
+      }
+      console.table(data);
+      const {whoChange} = await prompt([
+        {
+          name: "whoChange",
+          message: "Who's role would you like to change (ID#)?",
+          validate: function (whoChange) {
+            return /^\d{1,4}$/.test(whoChange);
+          },
+        },
+      ]);
+      empId = whoChange;
+
+      conn.query("SELECT * FROM role", 
+      // async 
+      (err, data) => {
+        if (err) {
+          throw err;
+        }
+        console.table(data);
+
+        prompt([
+          {
+            name: "newRole",
+            message: "Enter the new role Id for the employee:",
+            validate: function (newRole) {
+              return /\d{1,3}$/.test(newRole);
+            },
+          },
+        ]).then((ans)=>{
+          console.log(ans);
+          
+          conn.query(
+            "UPDATE employee SET role_id = ? WHERE id = ?",
+            [parseInt(ans.newRole), parseInt(empId)],
+            (err,result) => {
+              if(err){
+                throw err;
+              }
+              console.log(result);
+            }
+          );
+        })
+      });
+    });
+};
+
 const main = async () => {
   try {
     const ans = await prompt([
@@ -241,7 +295,7 @@ const main = async () => {
           "All employees by department",
           "All employees by manager",
           "Update employee roles",
-          "Update employee manager",
+          // "Update employee manager",
           "Remove employee",
           "Exit",
         ],
@@ -262,9 +316,10 @@ const main = async () => {
         await byMangr();
         break;
       case "Update employee roles":
+        await updateRole();
         break;
-      case "Update employee manager":
-        break;
+      // case "Update employee manager":
+      //   break;
       case "Remove employee":
         await delEmp();
         break;
@@ -276,17 +331,11 @@ const main = async () => {
   }
 };
 main();
-//all emps;
-//all emp by dept;
-//all emp by mang;
-//add emp,
-//remove emp;
+//todo:
 //update emp role;
 //update emp's mang;
 
 //bonus:
-//update employee managers
-//view employees by manager
 //delete depts, roles, employees
 
 //total utilized budget of department (combined salaries of all employees in dept)
