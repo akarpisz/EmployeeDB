@@ -2,15 +2,15 @@ const inquirer = require("inquirer");
 const { prompt } = inquirer;
 const mysql = require("mysql");
 const ctable = require("console.table");
-const Prompt = require("inquirer/lib/prompts/base");
-const conn = mysql.createConnection({
-  host: "localhost",
-  //CLEARDB_DATABASE_URL: mysql://b94cee627272fc:a79c6aad@us-cdbr-east-05.cleardb.net/heroku_580a23871c3d8b7?reconnect=true
-  port: 3306,
-  user: "root",
-  password: "Biggie92#@!*",
-  database: "employeedb",
-});
+// const conn = mysql.createConnection({
+//   CLEARDB_DATABASE_URL: "mysql://b94cee627272fc:a79c6aad@us-cdbr-east-05.cleardb.net/heroku_580a23871c3d8b7?reconnect=true",
+//   //CLEARDB_DATABASE_URL: mysql://b94cee627272fc:a79c6aad@us-cdbr-east-05.cleardb.net/heroku_580a23871c3d8b7?reconnect=true
+//   // port: process.env.PORT || 3306,
+//   // user: "root",
+//   // password: "Biggie92#@!*",
+//   // database: "employeedb",
+// });
+const conn =  mysql.createConnection("mysql://b94cee627272fc:a79c6aad@us-cdbr-east-05.cleardb.net/heroku_580a23871c3d8b7?reconnect=true");
 
 let sqlQ =
   "SELECT e.id, e.first_name, e.last_name, r.title, r.salary, d.department ";
