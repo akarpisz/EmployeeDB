@@ -100,6 +100,7 @@ const viewAll = () => {
         type: "confirm",
         name: "end",
         message: "Enter to return",
+        default: true,
       },
     ]).then((ans) => {
       if (ans.end) {
@@ -185,8 +186,7 @@ const delEmp = () => {
     });
   });
 };
-
-const byMangr = () => {
+const showMngrs = () => {
   let sqlQ = "SELECT id, first_name, last_name, title, department ";
   sqlQ += "FROM (";
   sqlQ +=
@@ -200,41 +200,44 @@ const byMangr = () => {
     if (err) {
       throw err;
     }
-    console.table(data);
-    prompt([
-      {
-        name: "mang",
-        message:
-          "Enter Desired Manager's ID (0 for employees without managers):",
-        validate: function (mang) {
-          return /^\d{1,4}$/.test(mang);
-        },
+    console.log("\nPress Enter when finished\n");
+    return console.table(data);
+  });
+};
+const byMangr = () => {
+  showMngrs();
+  prompt([
+    {
+      name: "mang",
+      message: "Enter Desired Manager's ID (0 for employees without managers):",
+      validate: function (mang) {
+        return /^\d{1,4}$/.test(mang);
       },
-    ]).then((ans) => {
-      conn.query(
-        "SELECT * FROM employee WHERE manager_id = ?",
-        [`${parseInt(ans.mang)}`],
-        (err, data) => {
-          if (err) {
-            throw err;
-          }
-          console.table(data);
-          prompt([
-            {
-              type: "confirm",
-              name: "end",
-              message: "Enter to return",
-            },
-          ]).then((ans) => {
-            if (ans.end) {
-              main();
-            } else {
-              byMangr();
-            }
-          });
+    },
+  ]).then((ans) => {
+    conn.query(
+      "SELECT * FROM employee WHERE manager_id = ?",
+      [`${parseInt(ans.mang)}`],
+      (err, data) => {
+        if (err) {
+          throw err;
         }
-      );
-    });
+        console.table(data);
+        prompt([
+          {
+            type: "confirm",
+            name: "end",
+            message: "Enter to return",
+          },
+        ]).then((ans) => {
+          if (ans.end) {
+            main();
+          } else {
+            byMangr();
+          }
+        });
+      }
+    );
   });
 };
 
@@ -257,39 +260,79 @@ const updateRole = () => {
     ]);
     empId = whoChange;
 
-    conn.query(
-      "SELECT * FROM role",
-      (err, data) => {
-        if (err) {
-          throw err;
-        }
-        console.table(data);
-
-        prompt([
-          {
-            name: "newRole",
-            message: "Enter the new role ID for the employee:",
-            validate: function (newRole) {
-              return /\d{1,3}$/.test(newRole);
-            },
-          },
-        ]).then((ans) => {
-          console.log(ans);
-
-          conn.query(
-            "UPDATE employee SET role_id = ? WHERE id = ?",
-            [parseInt(ans.newRole), parseInt(empId)],
-            (err, result) => {
-              if (err) {
-                throw err;
-              }
-              console.log(result);
-              return main();
-            }
-          );
-        });
+    conn.query("SELECT * FROM role", (err, data) => {
+      if (err) {
+        throw err;
       }
-    );
+      console.table(data);
+
+      prompt([
+        {
+          name: "newRole",
+          message: "Enter the new role ID for the employee:",
+          validate: function (newRole) {
+            return /\d{1,3}$/.test(newRole);
+          },
+        },
+      ]).then((ans) => {
+        console.log(ans);
+
+        conn.query(
+          "UPDATE employee SET role_id = ? WHERE id = ?",
+          [parseInt(ans.newRole), parseInt(empId)],
+          (err, result) => {
+            if (err) {
+              throw err;
+            }
+            console.log(result);
+            return main();
+          }
+        );
+      });
+    });
+  });
+};
+
+const updateMngr = () => {
+  conn.query(sqlQ, (err, data) => {
+    if (err) {
+      throw err;
+    }
+    console.table(data);
+    let emp;
+    prompt([
+      {
+        name: "update",
+        message: "Which employee (ID) will have their manager updated?:",
+        validate: function (update) {
+          return /\d{1,4}$/.test(update);
+        },
+      },
+    ]).then((ans) => {
+      emp = ans.update;
+      showMngrs();
+      prompt([
+        {
+          name: "mngr",
+          message: "New manager ID for selected employee?:",
+          validate: function (mngr) {
+            return /\d{1,4}$/.test(mngr);
+          },
+        },
+      ]).then((ans) => {
+        conn.query(
+          "UPDATE employee SET manager_id = ? WHERE id = ?",
+          [ans.mngr, `${parseInt(emp)}`],
+          (err, result) => {
+            if (err) {
+              throw err;
+            }
+            console.log(result);
+            main();
+          }
+        );
+      });
+    });
   });
 };
 
@@ -306,6 +349,7 @@ const main = async () => {
           "All employees by department",
           "All employees by manager",
           "Update employee roles",
+          "Update Manager",
           "Remove employee",
           "Exit",
         ],
@@ -327,6 +371,9 @@ const main = async () => {
         break;
       case "Update employee roles":
         await updateRole();
+        break;
+      case "Update Manager":
+        await updateMngr();
         break;
       case "Remove employee":
         await delEmp();
