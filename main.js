@@ -2,16 +2,12 @@ const inquirer = require("inquirer");
 const { prompt } = inquirer;
 const mysql = require("mysql");
 const ctable = require("console.table");
-// const conn = mysql.createConnection({
-//   CLEARDB_DATABASE_URL: "mysql://b94cee627272fc:a79c6aad@us-cdbr-east-05.cleardb.net/heroku_580a23871c3d8b7?reconnect=true",
-//   //CLEARDB_DATABASE_URL: mysql://b94cee627272fc:a79c6aad@us-cdbr-east-05.cleardb.net/heroku_580a23871c3d8b7?reconnect=true
-//   // port: process.env.PORT || 3306,
-//   // user: "root",
-//   // password: "Biggie92#@!*",
-//   // database: "employeedb",
-// });
-const conn =  mysql.createConnection({
-  CLEARDB_DATABASE_URL: "mysql://b94cee627272fc:a79c6aad@us-cdbr-east-05.cleardb.net/heroku_580a23871c3d8b7?reconnect=true"
+const conn = mysql.createConnection({
+  host: "localhost",
+  port: 3306,
+  user: "root",
+  password: "Biggie92#@!*",
+  database: "employeedb",
 });
 
 let sqlQ =
@@ -65,7 +61,7 @@ const addToDB = async () => {
     },
     {
       name: "manager_id",
-      message: "Enter Manage's ID (0 for NULL) :",
+      message: "Enter Manager's ID (0 for NULL) :",
     },
   ])
     .then((entry) => {
@@ -95,11 +91,6 @@ const addToDB = async () => {
 };
 
 const viewAll = () => {
-  // let sqlQ =
-  //   "SELECT e.id, e.first_name, e.last_name, r.title, r.salary, d.department ";
-  // sqlQ += "FROM employee e LEFT JOIN role r ON r.id = e.role_id ";
-  // sqlQ +=
-  //   "LEFT JOIN department d ON d.id = r.department_id ORDER BY e.last_name;";
   conn.query(sqlQ, (err, data) => {
     if (err) throw err;
     console.log("\n");
@@ -159,6 +150,7 @@ const byDept = () => {
     }
   });
 };
+
 const delQuery = (ans) => {
   console.log(ans);
   conn.query(
@@ -174,6 +166,7 @@ const delQuery = (ans) => {
     }
   );
 };
+
 const delEmp = () => {
   conn.query(sqlQ, (err, data) => {
     if (err) throw err;
@@ -187,7 +180,7 @@ const delEmp = () => {
           return /\d{1,4}/.test(del);
         },
       },
-    ]).then((ans) => {
+    ]).then(async (ans) => {
       delQuery(ans.del);
     });
   });
@@ -211,7 +204,8 @@ const byMangr = () => {
     prompt([
       {
         name: "mang",
-        message: "Enter Desired Manager's ID:",
+        message:
+          "Enter Desired Manager's ID (0 for employees without managers):",
         validate: function (mang) {
           return /^\d{1,4}$/.test(mang);
         },
@@ -225,6 +219,19 @@ const byMangr = () => {
             throw err;
           }
           console.table(data);
+          prompt([
+            {
+              type: "confirm",
+              name: "end",
+              message: "Enter to return",
+            },
+          ]).then((ans) => {
+            if (ans.end) {
+              main();
+            } else {
+              byMangr();
+            }
+          });
         }
       );
     });
@@ -232,26 +239,26 @@ const byMangr = () => {
 };
 
 const updateRole = () => {
-    let empId;
+  let empId;
 
-    conn.query(sqlQ, async (err, data) => {
-      if (err) {
-        throw err;
-      }
-      console.table(data);
-      const {whoChange} = await prompt([
-        {
-          name: "whoChange",
-          message: "Who's role would you like to change (ID#)?",
-          validate: function (whoChange) {
-            return /^\d{1,4}$/.test(whoChange);
-          },
+  conn.query(sqlQ, async (err, data) => {
+    if (err) {
+      throw err;
+    }
+    console.table(data);
+    const { whoChange } = await prompt([
+      {
+        name: "whoChange",
+        message: "Who's role would you like to change (ID#)?",
+        validate: function (whoChange) {
+          return /^\d{1,4}$/.test(whoChange);
         },
-      ]);
-      empId = whoChange;
+      },
+    ]);
+    empId = whoChange;
 
-      conn.query("SELECT * FROM role", 
-      // async 
+    conn.query(
+      "SELECT * FROM role",
       (err, data) => {
         if (err) {
           throw err;
@@ -261,27 +268,29 @@ const updateRole = () => {
         prompt([
           {
             name: "newRole",
-            message: "Enter the new role Id for the employee:",
+            message: "Enter the new role ID for the employee:",
             validate: function (newRole) {
               return /\d{1,3}$/.test(newRole);
             },
           },
-        ]).then((ans)=>{
+        ]).then((ans) => {
           console.log(ans);
-          
+
           conn.query(
             "UPDATE employee SET role_id = ? WHERE id = ?",
             [parseInt(ans.newRole), parseInt(empId)],
-            (err,result) => {
-              if(err){
+            (err, result) => {
+              if (err) {
                 throw err;
               }
               console.log(result);
+              return main();
             }
           );
-        })
-      });
-    });
+        });
+      }
+    );
+  });
 };
 
 const main = async () => {
@@ -297,7 +306,6 @@ const main = async () => {
           "All employees by department",
           "All employees by manager",
           "Update employee roles",
-          // "Update employee manager",
           "Remove employee",
           "Exit",
         ],
@@ -320,8 +328,6 @@ const main = async () => {
       case "Update employee roles":
         await updateRole();
         break;
-      // case "Update employee manager":
-      //   break;
       case "Remove employee":
         await delEmp();
         break;
@@ -333,13 +339,9 @@ const main = async () => {
   }
 };
 main();
-//todo:
-//update emp role;
-//update emp's mang;
 
 //bonus:
+//update emp role;
+//update emp's mang;
 //delete depts, roles, employees
-
 //total utilized budget of department (combined salaries of all employees in dept)
-
-//CLEARDB_DATABASE_URL: mysql://b94cee627272fc:a79c6aad@us-cdbr-east-05.cleardb.net/heroku_580a23871c3d8b7?reconnect=true
