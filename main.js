@@ -134,12 +134,12 @@ const byDept = () => {
   ]).then(async (ans) => {
     try {
       let dept = ans.dept;
-      let sqlQ =
-        "Select * FROM (SELECT e.id, e.first_name, e.last_name, r.title, r.salary, d.department ";
-      sqlQ += "FROM employee e LEFT JOIN role r ";
-      sqlQ += "ON r.id = e.role_id LEFT JOIN department d ";
-      sqlQ += "ON d.id = r.department_id) joined ";
-      sqlQ += "WHERE joined.department = ?";
+      // let sqlQ =
+      //   "Select * FROM (SELECT e.id, e.first_name, e.last_name, r.title, r.salary, d.department ";
+      // sqlQ += "FROM employee e LEFT JOIN role r ";
+      // sqlQ += "ON r.id = e.role_id LEFT JOIN department d ";
+      // sqlQ += "ON d.id = r.department_id) joined ";
+      // sqlQ += "WHERE joined.department = ?";
 
       // conn.query(sqlQ, [dept], (err, data) => {
       //   if (err) throw err;
@@ -151,7 +151,7 @@ const byDept = () => {
         //     message: "Enter to return",
         //   },
         // ])
-        db.viewDept(sqlQ, dept);
+        db.viewDept(dept);
         returnToMain().then((ans) => {
           if (ans.end) {
             main();
