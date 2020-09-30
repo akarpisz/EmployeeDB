@@ -36,8 +36,10 @@ module.exports = {
   viewAll: () => {
     conn.query(sqlQ, (err, data) => {
       if (err) throw err;
+      console.log("\n\n");
+      console.table(data); //return previously
       console.log("\n");
-      return console.table(data);
+      return console.log("enter y to exit, n to see data again");
     //   return prompt([
     //     {
     //       type: "confirm",
@@ -48,4 +50,34 @@ module.exports = {
     //   ]);
     });
   },
-};
+  viewDept: (query, dept)=>{
+    conn.query(query, [dept], (err, data) => {
+        if (err) throw err;
+        console.log("\n\n");
+        console.table(data);
+        return console.log("enter y to exit, n to see data again")
+    })
+  },
+  showMngrs: ()=>{
+   
+        let sqlQ = "SELECT id, first_name, last_name, title, department ";
+        sqlQ += "FROM (";
+        sqlQ +=
+          "SELECT e.id, e.first_name, e.last_name, r.title, r.salary, d.department ";
+        sqlQ += "FROM employee e LEFT JOIN role r ON r.id = e.role_id ";
+        sqlQ +=
+          "LEFT JOIN department d ON d.id = r.department_id ORDER BY e.last_name) AS Joined ";
+        sqlQ += "WHERE title REGEXP 'Manager$'";
+      
+        conn.query(sqlQ, (err, data) => {
+          if (err) {
+            throw err;
+          }
+          console.log("\nPress Enter when finished\n");
+          return console.table(data);
+        });
+  },
+  byMangrs: ()=>{
+
+  },
+}

@@ -13,6 +13,19 @@ const ctable = require("console.table");
 
 const db = require("./db");
 
+
+const returnToMain = () => {
+  console.log("\n");
+  return (
+    prompt([
+    {
+      type: "confirm",
+      name: "end",
+      message: "Enter to return",
+    },
+  ])
+  )
+}
 // let sqlQ =
 //   "SELECT e.id, e.first_name, e.last_name, r.title, r.salary, d.department ";
 // sqlQ += "FROM employee e LEFT JOIN role r ON r.id = e.role_id ";
@@ -101,15 +114,8 @@ const viewAll = () => {
   //   console.log("\n");
   //   console.table(data);
   db.viewAll();
-
-  prompt([
-    {
-      type: "confirm",
-      name: "end",
-      message: "Enter to return",
-      default: true,
-    },
-  ]).then((ans) => {
+  returnToMain()
+  .then((ans) => {
     if (ans.end) {
       main();
     } else {
@@ -135,23 +141,25 @@ const byDept = () => {
       sqlQ += "ON d.id = r.department_id) joined ";
       sqlQ += "WHERE joined.department = ?";
 
-      conn.query(sqlQ, [dept], (err, data) => {
-        if (err) throw err;
-        console.table(data);
-        prompt([
-          {
-            type: "confirm",
-            name: "end",
-            message: "Enter to return",
-          },
-        ]).then((ans) => {
+      // conn.query(sqlQ, [dept], (err, data) => {
+      //   if (err) throw err;
+      //   console.table(data);
+        // prompt([
+        //   {
+        //     type: "confirm",
+        //     name: "end",
+        //     message: "Enter to return",
+        //   },
+        // ])
+        db.viewDept(sqlQ, dept);
+        returnToMain().then((ans) => {
           if (ans.end) {
             main();
           } else {
             byDept();
           }
         });
-      });
+      //});
     } catch (err) {
       return err;
     }
@@ -192,26 +200,26 @@ const delEmp = () => {
     });
   });
 };
-const showMngrs = () => {
-  let sqlQ = "SELECT id, first_name, last_name, title, department ";
-  sqlQ += "FROM (";
-  sqlQ +=
-    "SELECT e.id, e.first_name, e.last_name, r.title, r.salary, d.department ";
-  sqlQ += "FROM employee e LEFT JOIN role r ON r.id = e.role_id ";
-  sqlQ +=
-    "LEFT JOIN department d ON d.id = r.department_id ORDER BY e.last_name) AS Joined ";
-  sqlQ += "WHERE title REGEXP 'Manager$'";
+// const showMngrs = () => {
+//   let sqlQ = "SELECT id, first_name, last_name, title, department ";
+//   sqlQ += "FROM (";
+//   sqlQ +=
+//     "SELECT e.id, e.first_name, e.last_name, r.title, r.salary, d.department ";
+//   sqlQ += "FROM employee e LEFT JOIN role r ON r.id = e.role_id ";
+//   sqlQ +=
+//     "LEFT JOIN department d ON d.id = r.department_id ORDER BY e.last_name) AS Joined ";
+//   sqlQ += "WHERE title REGEXP 'Manager$'";
 
-  conn.query(sqlQ, (err, data) => {
-    if (err) {
-      throw err;
-    }
-    console.log("\nPress Enter when finished\n");
-    return console.table(data);
-  });
-};
+//   conn.query(sqlQ, (err, data) => {
+//     if (err) {
+//       throw err;
+//     }
+//     console.log("\nPress Enter when finished\n");
+//     return console.table(data);
+//   });
+// };
 const byMangr = () => {
-  showMngrs();
+  db.showMngrs();
   prompt([
     {
       name: "mang",
