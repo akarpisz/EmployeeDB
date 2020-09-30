@@ -234,29 +234,31 @@ const byMangr = () => {
       },
     },
   ]).then((ans) => {
-    conn.query(
-      "SELECT * FROM employee WHERE manager_id = ?",
-      [`${parseInt(ans.mang)}`],
-      (err, data) => {
-        if (err) {
-          throw err;
-        }
-        console.table(data);
-        prompt([
-          {
-            type: "confirm",
-            name: "end",
-            message: "Enter to return",
-          },
-        ]).then((ans) => {
+    // conn.query(
+    //   "SELECT * FROM employee WHERE manager_id = ?",
+    //   [`${parseInt(ans.mang)}`],
+    //   (err, data) => {
+    //     if (err) {
+    //       throw err;
+    //     }
+    //     console.table(data);
+        // prompt([
+        //   {
+        //     type: "confirm",
+        //     name: "end",
+        //     message: "Enter to return",
+        //   },
+        // ])
+        db.byMangr(ans.mang)
+        returnToMain().then((ans) => {
           if (ans.end) {
             main();
           } else {
             byMangr();
           }
         });
-      }
-    );
+      //}
+    //);
   });
 };
 
