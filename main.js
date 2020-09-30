@@ -2,24 +2,27 @@ const inquirer = require("inquirer");
 const { prompt } = inquirer;
 const mysql = require("mysql");
 const ctable = require("console.table");
-const conn = mysql.createConnection({
-  host: "localhost",
-  port: 3306,
-  user: "root",
-  password: "Biggie92#@!*",
-  database: "employeedb",
-});
 
-let sqlQ =
-  "SELECT e.id, e.first_name, e.last_name, r.title, r.salary, d.department ";
-sqlQ += "FROM employee e LEFT JOIN role r ON r.id = e.role_id ";
-sqlQ +=
-  "LEFT JOIN department d ON d.id = r.department_id ORDER BY e.last_name;";
+// const conn = mysql.createConnection({
+//   host: "localhost",
+//   port: 3306,
+//   user: "dru",
+//   password: "Garbage99!!",
+//   database: "EmployeeDB",
+// });
 
-conn.connect((err) => {
-  if (err) throw err;
-  console.log("connected!");
-});
+const db = require("./db");
+
+// let sqlQ =
+//   "SELECT e.id, e.first_name, e.last_name, r.title, r.salary, d.department ";
+// sqlQ += "FROM employee e LEFT JOIN role r ON r.id = e.role_id ";
+// sqlQ +=
+//   "LEFT JOIN department d ON d.id = r.department_id ORDER BY e.last_name;";
+
+// conn.connect((err) => {
+//   if (err) throw err;
+//   console.log("connected!");
+// });
 
 const addToDB = async () => {
   prompt([
@@ -73,17 +76,19 @@ const addToDB = async () => {
         `${parseInt(entry.role_id)}`,
         `${parseInt(entry.manager_id)}`,
       ];
-      conn.query(
-        "INSERT INTO employee(id, first_name, last_name, role_id, manager_id) VALUES (?,?,?,?,?);",
-        query,
-        (err) => {
-          if (err) {
-            throw err;
-          } else {
-            console.log("done");
-          }
-        }
-      );
+
+      db.addEmployee(query);
+      // conn.query(
+      //   "INSERT INTO employee(id, first_name, last_name, role_id, manager_id) VALUES (?,?,?,?,?);",
+      //   query,
+      //   (err) => {
+      //     if (err) {
+      //       throw err;
+      //     } else {
+      //       console.log("done");
+      //     }
+      //   }
+      // );
     })
     .then(() => {
       main();
@@ -91,24 +96,25 @@ const addToDB = async () => {
 };
 
 const viewAll = () => {
-  conn.query(sqlQ, (err, data) => {
-    if (err) throw err;
-    console.log("\n");
-    console.table(data);
-    prompt([
-      {
-        type: "confirm",
-        name: "end",
-        message: "Enter to return",
-        default: true,
-      },
-    ]).then((ans) => {
-      if (ans.end) {
-        main();
-      } else {
-        viewAll();
-      }
-    });
+  // conn.query(sqlQ, (err, data) => {
+  //   if (err) throw err;
+  //   console.log("\n");
+  //   console.table(data);
+  db.viewAll();
+
+  prompt([
+    {
+      type: "confirm",
+      name: "end",
+      message: "Enter to return",
+      default: true,
+    },
+  ]).then((ans) => {
+    if (ans.end) {
+      main();
+    } else {
+      viewAll();
+    }
   });
 };
 
