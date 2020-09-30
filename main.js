@@ -166,27 +166,27 @@ const byDept = () => {
   });
 };
 
-const delQuery = (ans) => {
-  console.log(ans);
-  conn.query(
-    "DELETE FROM employee WHERE id = ?",
-    [`${parseInt(ans)}`],
-    (err, result) => {
-      if (err) {
-        return err;
-      }
-      console.log(result);
-      console.log("Delete Successful");
-      return main();
-    }
-  );
-};
+// const delQuery = (ans) => {
+//   console.log(ans);
+//   conn.query(
+//     "DELETE FROM employee WHERE id = ?",
+//     [`${parseInt(ans)}`],
+//     (err, result) => {
+//       if (err) {
+//         return err;
+//       }
+//       console.log(result);
+//       console.log("Delete Successful");
+//       return main();
+//     }
+//   );
+// };
 
 const delEmp = () => {
-  conn.query(sqlQ, (err, data) => {
-    if (err) throw err;
-    console.table(data);
-
+  // conn.query(sqlQ, (err, data) => {
+  //   if (err) throw err;
+  //   console.table(data);
+  db.viewAll()
     prompt([
       {
         name: "del",
@@ -195,10 +195,15 @@ const delEmp = () => {
           return /\d{1,4}/.test(del);
         },
       },
-    ]).then(async (ans) => {
-      delQuery(ans.del);
+    ]).then( async(ans) => {
+      try{
+      await db.delQuery(ans.del);
+      main();
+    } catch (err){
+      throw err;
+    }
     });
-  });
+  //});
 };
 // const showMngrs = () => {
 //   let sqlQ = "SELECT id, first_name, last_name, title, department ";

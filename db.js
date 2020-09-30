@@ -86,4 +86,18 @@ module.exports = {
   byMangrs: ()=>{
 
   },
+  delQuery: (ans) => {
+    console.log(ans);
+    conn.query(
+      "DELETE FROM employee WHERE id = ?",
+      [`${parseInt(ans)}`],
+      (err, result) => {
+        if (err) {
+          return err;
+        }
+        console.log("\nDelete Successful");
+        return
+      }
+    );
+  },
 }
